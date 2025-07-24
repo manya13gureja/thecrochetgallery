@@ -46,12 +46,14 @@ const AudioPlayer = ({ isMuted }: { isMuted: boolean }) => {
 };
 
 const GalleryWebsite = () => {
-  const [currentRoom, setCurrentRoom] = useState(1);
   const [doorsVisited, setDoorsVisited] = useState(0);
   const [doorPosition, setDoorPosition] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const doorClickAudio = useRef<HTMLAudioElement | null>(null);
+
+  // Derive currentRoom from doorsVisited
+  const currentRoom = (doorsVisited % 3) + 1;
 
   useEffect(() => {
     doorClickAudio.current = new Audio("/door-close.mp3");
@@ -113,6 +115,10 @@ const GalleryWebsite = () => {
     setDoorPosition(Math.floor(Math.random() * maxPosition));
   }, [currentRoom, rooms]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentRoom]);
+
   const getRandomPosition = () => ({
     marginTop: `${Math.random() * 20}px`,
     marginLeft: `${Math.random() * 20}px`,
@@ -131,9 +137,8 @@ const GalleryWebsite = () => {
       doorClickAudio.current.currentTime = 0;
       doorClickAudio.current.play();
     }
-
-    setCurrentRoom((prev) => (prev % 3) + 1);
-    setDoorsVisited((prev) => prev + 1);
+    // Increment doorsVisited, reset to 0 after every full cycle
+    setDoorsVisited((prev) => (prev + 1) % 3 === 0 ? 0 : prev + 1);
   };
 
   const currentRoomData = rooms[currentRoom];
@@ -148,16 +153,10 @@ const GalleryWebsite = () => {
   const Door = () => (
     <button
       onClick={handleNextRoom}
-      className="relative w-16 h-20 group hover:scale-105 transition-transform"
+      className="relative w-16 h-24 group hover:scale-105 transition-transform flex items-center justify-center text-5xl"
       style={getRandomPosition()}
     >
-      <div className="w-full h-full">
-        <img
-          src="/assets/door-image.jpeg"
-          alt="door"
-          className="w-full h-full object-cover"
-        />
-      </div>
+      <span role="img" aria-label="door">🚪</span>
     </button>
   );
 
